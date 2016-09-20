@@ -1,0 +1,5 @@
+search: Can you /get/ me a train [vehicle] /to/ Brighton [location] [destination]?
+define: My boy [gender] /is/ about 20 [number] [age] /yo/.
+search: I want to /go/ /to/ Warsaw [location] [destination].
+search: We /leave/ /at/ 20:30 [time] [departure] /from/ Milano [location] [origin].
+book: I /will/ /take/ the second [number] [selection] /option/.
