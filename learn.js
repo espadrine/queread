@@ -1,3 +1,5 @@
+const tokenize = require('./data/tokenize.js')
+
 // dataset (optional): output from data/parser.js
 function Brain(dataset) {
   // The root of the tree represents the start of the query.
@@ -43,8 +45,8 @@ Brain.prototype = {
     this.weightsNeedBuilding = false
   },
   guess: function(query) {
-    // TODO: lowercase, detect locations, numbers, etc.
-    let words = query.trim().split(/\s+/)
+    // List of {text, tag, type}.
+    let words = tokenize(query.trim())
 
     // Build weights if necessary.
     if (this.weightsNeedBuilding) { this.buildWeights() }
@@ -52,7 +54,8 @@ Brain.prototype = {
     let labelWeightSums = new Map()
     let walkedNodes = [this.root]
     let walkedLinks = []
-    words.forEach(text => {
+    words.forEach(word => {
+      let text = word.tag
       walkedNodes.forEach(node => {
         if (node.has(text)) {
           let link = node.getLink(text)
