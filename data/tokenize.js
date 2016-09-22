@@ -16,7 +16,10 @@ Tokens.prototype = {
     n = n || 0
     return this.text[this.index + n]
   },
-  advance: function(n) { this.index += n || 1 },
+  advance: function(n) {
+    if (n === undefined) { n = 1 }
+    this.index += n
+  },
   remain: function() { return this.index <= this.text.length },
   rest: function() { return this.text.slice(this.index) },
   startToken: function() { this.tokenStart = this.index },
@@ -39,6 +42,10 @@ Tokens.prototype = {
 function parse(text) {
   let tokens = new Tokens(text)
   while (tokens.remain()) {
+    let whitespace = /\S/.exec(tokens.rest())
+    if (whitespace !== null) {
+      tokens.advance(whitespace.index)  // Ignore whitespace.
+    }
     let matched = false
     let matchersLen = parse.parameterMatchers.length
     for (let i = 0; i < matchersLen; i++) {
