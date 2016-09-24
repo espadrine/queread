@@ -1,5 +1,5 @@
-// The parameter parser reads a string of words. It returns a list of words
-// (potentially with spaces, eg. because `12, 99 €` was a single parameter, not
+// The tokenizer reads a string of words. It returns a list of words
+// (potentially with spaces, eg. because `12, 99 €` was a single token, not
 // a list of three separate words), and for each word, a list of tags that it
 // maps to.
 
@@ -39,6 +39,10 @@ Tokens.prototype = {
 }
 
 // Return a list of {text, tag, type}.
+// `type` is which token matcher is applied (integer, number, word, …).
+// `text` is the original piece of string that is matched.
+// `tag` is what the token represents in the graph: a lowercase version of the
+//   piece of string matched, or the type of a parameter (a non-word).
 function parse(text) {
   let tokens = new Tokens(text)
   while (tokens.remain()) {
@@ -47,9 +51,9 @@ function parse(text) {
       tokens.advance(whitespace.index)  // Ignore whitespace.
     }
     let matched = false
-    let matchersLen = parse.parameterMatchers.length
+    let matchersLen = parse.tokenMatchers.length
     for (let i = 0; i < matchersLen; i++) {
-      if (parse.parameterMatchers[i](tokens)) { matched = true; break }
+      if (parse.tokenMatchers[i](tokens)) { matched = true; break }
     }
     // Advance by one character if nothing matched.
     if (!matched) { tokens.advance() }
@@ -90,7 +94,7 @@ function word(tokens) {
   }
 }
 
-parse.parameterMatchers = [
+parse.tokenMatchers = [
   // Number is harder to match than integer, so it is first.
   number,
   integer,
