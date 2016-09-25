@@ -82,7 +82,7 @@ Brain.prototype = {
               if (tags.length > 0) {
                 // Remove the first tag, which is simply the token type
                 // (`text`).
-                tags.slice(1).forEach(tag => params[tag] = word.text)
+                tags.slice(1).forEach(tag => params[tag] = word.data)
               } else {
                 // Use the token type (`text`).
                 params[text] = word.text
