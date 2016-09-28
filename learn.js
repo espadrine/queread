@@ -1,6 +1,6 @@
-const tokenize = require('./data/tokenize.js')
+const tokenize = require('./src/tokenizer/tokenize.js')
 
-// dataset (optional): output from data/parser.js
+// dataset (optional): output from src/parser.js
 function Brain(dataset) {
   // The root of the tree represents the start of the query.
   this.root = new Node(this)
