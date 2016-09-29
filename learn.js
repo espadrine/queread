@@ -5,6 +5,11 @@ function Brain(dataset) {
   // The root of the tree represents the start of the query.
   this.root = new Node(this)
 
+  // List of token matchers: functions from tokens
+  // (see src/tokenizers/tokenize.js)
+  // to either nothing (if no match) or {tag, length, data}.
+  this.tokenMatchers = tokenize.defaultTokenMatchers()
+
   // Number of examples per label.
   this.numExamples = new Map()
   // Are weights built?
@@ -46,7 +51,7 @@ Brain.prototype = {
   },
   guess: function(query) {
     // List of {text, tag, type}.
-    let words = tokenize(query.trim())
+    let words = tokenize(query.trim(), this.tokenMatchers)
 
     // Build weights if necessary.
     if (this.weightsNeedBuilding) { this.buildWeights() }
@@ -79,7 +84,7 @@ Brain.prototype = {
               // Create the map for the accessible labels.
               let params = paramsPerLabel.get(label) || Object.create(null)
               let tags = link.target.labelTags.get(label) || []
-              if (tags.length > 0) {
+              if (tags.length > 1) {
                 // Remove the first tag, which is simply the token type
                 // (`text`).
                 tags.slice(1).forEach(tag => params[tag] = word.data)
@@ -114,6 +119,11 @@ Brain.prototype = {
       probability: max,
       parameters: paramsPerLabel.get(maxLabel) || {},
     }
+  },
+  // Takes a token matcher (function from a tokenizer state to either nothing
+  // (if there is no token at that state) or {tag, length, data}).
+  addParameter: function(tokenMatcher) {
+    this.tokenMatchers.unshift(tokenMatcher)
   },
 }
 
