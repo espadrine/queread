@@ -1,0 +1,28 @@
+{
+  "name": "queread",
+  "version": "0.1.0",
+  "description": "Natural language interactive bot library",
+  "main": "queread.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/espadrine/queread.git"
+  },
+  "keywords": [
+    "NLP",
+    "bot",
+    "query",
+    "CLI"
+  ],
+  "author": "Thaddée Tyl",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/espadrine/queread/issues"
+  },
+  "homepage": "https://github.com/espadrine/queread#readme"
+}
