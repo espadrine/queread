@@ -6,13 +6,13 @@ function parse(dataset) {
 }
 
 // Single string example
-// eg. "search: Can you /get/ me a train [vehicle] /to/ Brighton [location] [destination]?"
+// eg. "search: Can you get me /a train/ [vehicle] to Brighton [location] [destination]?"
 function parseExample(example) {
   let labelIndex = example.indexOf(':')
   if (labelIndex < 0) { return }
   let labelsText = example.slice(0, labelIndex)
   let labels = labelsText.trim().split(/\s+/)
-  let text = example.slice(labelIndex)
+  let text = example.slice(labelIndex + 1)
   // ['/get/', 'train [vehicle]', '/to/', 'Brighton [location] [departure]']
   let rawWords = text.match(/\/[\w'":\-\s]+\/(\s\[\w+\])*|[\w'":-]+(\s\[\w+\])+/g)
   let words = rawWords.map(parseWord)
@@ -40,7 +40,7 @@ function parseWord(word) {
   let tags = rest.trim().split(/\s+/).map(tag => tag.slice(1, -1))
     .filter(tag => tag !== '')
   return {
-    text: text,
+    text: text.toLowerCase(),
     tags: tags,
   }
 }

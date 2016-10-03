@@ -74,7 +74,7 @@ Tokens.prototype = {
 
 function word(tokens) {
   let rest = tokens.rest()
-  let match = /^\S+/.exec(rest)
+  let match = /^\S+?\b/.exec(rest)
   if (match !== null) {
     return {
       tag: 'word',
