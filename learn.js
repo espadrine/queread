@@ -90,7 +90,7 @@ Brain.prototype = {
                 tags.slice(1).forEach(tag => params[tag] = word.data)
               } else {
                 // Use the token type (`text`).
-                params[text] = word.text
+                params[text] = word.data
               }
               paramsPerLabel.set(label, params)
             }
