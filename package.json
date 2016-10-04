@@ -1,6 +1,6 @@
 {
   "name": "queread",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Natural language interactive bot library",
   "main": "queread.js",
   "directories": {
