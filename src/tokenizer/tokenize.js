@@ -95,5 +95,6 @@ const basicTokenMatchers = [
 parse.defaultTokenMatchers = function() {
   return basicTokenMatchers.slice()
 }
+parse.word = word
 
 module.exports = parse

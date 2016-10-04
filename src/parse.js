@@ -5,6 +5,23 @@ function parse(dataset) {
   return lines.map(parseExample).filter(i => i != null)
 }
 
+const tokenize = require('./tokenizer/tokenize.js')
+let tokenMatchers = [
+  function(tokens) {
+    let rest = tokens.rest()
+    // ['get', 'train [vehicle]', 'to', '/Brighton/ [location] [departure]']
+    let match = /^\/[\w'":\-\s]+\/(\s\[\w+\])*|^[\w'":-]+(\s\[\w+\])+/.exec(rest)
+    if (match !== null) {
+      return {
+        tag: 'param',
+        length: match[0].length,
+        data: parseWord(match[0]),
+      }
+    }
+  },
+  tokenize.word,
+]
+
 // Single string example
 // eg. "search: Can you get me /a train/ [vehicle] to Brighton [location] [destination]?"
 function parseExample(example) {
@@ -13,9 +30,17 @@ function parseExample(example) {
   let labelsText = example.slice(0, labelIndex)
   let labels = labelsText.trim().split(/\s+/)
   let text = example.slice(labelIndex + 1)
-  // ['/get/', 'train [vehicle]', '/to/', 'Brighton [location] [departure]']
-  let rawWords = text.match(/\/[\w'":\-\s]+\/(\s\[\w+\])*|[\w'":-]+(\s\[\w+\])+/g)
-  let words = rawWords.map(parseWord)
+
+  // List of {text, tag, type, data}.
+  let tokens = tokenize(text, tokenMatchers)
+  let words = tokens.map(token => {
+    if (token.type === 'param') {
+      return token.data
+    } else {
+      return {text: token.tag, tags: []}
+    }
+  })
+
   return {
     labels: labels,
     text: text,
