@@ -1,6 +1,6 @@
 exports.integer =
 function integer(tokens) {
-  let int = /^[0-9]|[0-9][0-9 ]*[0-9](?:st|nd|rd|th)?\b/
+  let int = /^[0-9][0-9 ]*(?:(st|nd|rd|th)\b)?/
   let match = int.exec(tokens.rest())
   if (match !== null) {
     let data = +match[0].replace(/ /g, '')
@@ -18,7 +18,7 @@ function integer(tokens) {
 exports.number =
 function number(tokens) {
   // Get all numbers together.
-  let num = /^([0-9]|[0-9][0-9 ]*[0-9])( *[\.,] *[0-9 ]*[0-9])?\b/
+  let num = /^([0-9][0-9 ]*)( *[\.,] *[0-9 ]*[0-9])?/
   let match = num.exec(tokens.rest())
   if (match !== null) {
     let data = +match[0].replace(/ /g, '').replace(',', '.')

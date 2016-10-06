@@ -32,7 +32,7 @@ function time(tokens) {
       if (match[1] === 'pm') {
         hour += 12
       }
-      let data = { hour: hour, minute: minute }
+      let data = {hour, minute}
       return {
         tag: 'time',
         length: num.length + match[0].length,
@@ -90,7 +90,7 @@ function time(tokens) {
     let year = +match[3]
     if (year < 100) { year += 2000 }
     let data = {
-      year: year,
+      year,
       month: +match[2],
       day: +match[1],
     }
@@ -107,7 +107,7 @@ function time(tokens) {
     let year = +match[3]
     if (year < 100) { year += 2000 }
     let data = {
-      year: year,
+      year,
       month: +match[1],
       day: +match[2],
     }
@@ -168,5 +168,3 @@ function time(tokens) {
   // last, next, on, ago, start / end of the, in two, week 12
   // FIXME: see https://github.com/mojombo/chronic#examples
 }
-
-
