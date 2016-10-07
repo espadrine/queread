@@ -18,10 +18,10 @@ function integer(tokens) {
 exports.number =
 function number(tokens) {
   // Get all numbers together.
-  let num = /^([0-9][0-9 ]*)( *[\.,] *[0-9 ]*[0-9])?/
+  let num = /^([0-9][0-9 ,]*)( *\.[0-9 ]*[0-9])/
   let match = num.exec(tokens.rest())
   if (match !== null) {
-    let data = +match[0].replace(/ /g, '').replace(',', '.')
+    let data = +match[0].replace(/[ ,]/g, '')
     return {
       tag: 'number',
       length: match[0].length,

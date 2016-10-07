@@ -1,10 +1,13 @@
+const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
-const assert = require('assert')
 const Bot = require('../queread.js')
 let datafile = fs.readFileSync(path.join(__dirname, './dataset'))
 let dataset = Bot.parse(String(datafile))
 let bot = new Bot(dataset)
+
+const tokenizerTest = require('./tokenizer.js')
+tokenizerTest.run()
 
 // Added tokenizers.
 bot.addParameter(function origin(tokens) {
