@@ -1,6 +1,7 @@
 exports.integer =
 function integer(tokens) {
   let rest = tokens.rest()
+  let returned
   let int = /^([0-9][0-9 ]*)((st|nd|rd|th)\b)?/
   let match = int.exec(rest)
   if (match !== null) {
@@ -9,7 +10,7 @@ function integer(tokens) {
       data = new Number(data)
       data.ordered = true
     }
-    return {
+    returned = {
       tag: 'integer',
       length: match[0].length,
       data: data,
@@ -87,12 +88,51 @@ function integer(tokens) {
       data = new Number(data)
       data.ordered = true
     }
-    return {
+    returned = {
       tag: 'integer',
       length: tokenSize,
       data,
     }
   }
+
+  // Counting from the end: last, next to last, second to last…
+  if (returned !== undefined) {
+    match = /^ (?:before|to) (?:the )?(?:last|end)\b/.exec(rest.slice(returned.length))
+    if (match !== null) {
+      // eg. second to last, five to last
+      returned.data = new Number(-returned.data)
+      returned.data.ordered = true
+      returned.length += match[0].length
+    }
+  }
+
+  match = /^(next to )?(?:the )?(?:last|end)\b/.exec(rest)
+  if (match !== null) {
+    let data = -1
+    if (match[1] !== undefined) { data = -2 }
+    data = new Number(data)
+    data.ordered = true
+    return {
+      tag: 'integer',
+      length: match[0].length,
+      data,
+    }
+  }
+
+  match = /^((((pro)?pre)?ante)?pen)?ultimate\b/.exec(rest)
+  if (match !== null) {
+    let data = 0
+    match.forEach(m => {if (m !== undefined) { data-- }})
+    data = new Number(data)
+    data.ordered = true
+    return {
+      tag: 'integer',
+      length: match[0].length,
+      data: data,
+    }
+  }
+
+  return returned
 }
 
 // Input: [20, 3], output: 23.
