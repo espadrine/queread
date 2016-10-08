@@ -57,8 +57,10 @@ function time(tokens) {
         data.second = int.data - data.hour - data.minute
       } else if (int.data < 6) {
         data.hour = 12 + int.data
+        data.minute = 0
       } else {
         data.hour = +int.data
+        data.minute = 0
       }
       return {
         tag: 'time',
@@ -69,7 +71,7 @@ function time(tokens) {
   }
 
   // Now, calendar date information.
-  let date = /^([0-9]+)-(0[1-9]|10|11|12)-([0-2][0-9]|30|31)/
+  let date = /^([0-9]+)-(0?[1-9]|10|11|12)-([0-2][0-9]|30|31)/
   match = date.exec(tokens.rest())
   if (match !== null) {
     let data = {
@@ -84,7 +86,7 @@ function time(tokens) {
     }
   }
   // British form first.
-  let britishDate = /^([0-2][0-9]|30|31)\/(0[1-9]|10|11|12)\/([0-9]+)/
+  let britishDate = /^([0-2][0-9]|30|31)\/(0?[1-9]|10|11|12)\/([0-9]+)/
   match = britishDate.exec(tokens.rest())
   if (match !== null) {
     let year = +match[3]
@@ -101,7 +103,7 @@ function time(tokens) {
     }
   }
   // American form.
-  let americanDate = /^(0[1-9]|10|11|12)\/([0-2][0-9]|30|31)\/([0-9]+)/
+  let americanDate = /^(0?[1-9]|10|11|12)\/([0-2][0-9]|30|31)\/([0-9]+)/
   match = americanDate.exec(tokens.rest())
   if (match !== null) {
     let year = +match[3]
@@ -118,7 +120,7 @@ function time(tokens) {
     }
   }
   // Day - month.
-  let calDate = /^([0-2][0-9]|30|31)-(0[1-9]|10|11|12)/
+  let calDate = /^([0-2][0-9]|30|31)-(0?[1-9]|10|11|12)/
   match = calDate.exec(tokens.rest())
   if (match !== null) {
     let data = {
@@ -132,7 +134,7 @@ function time(tokens) {
     }
   }
   // Day / month. British form.
-  let britishCalDate = /^([0-2][0-9]|30|31)\/(0[1-9]|10|11|12)/
+  let britishCalDate = /^([0-2][0-9]|30|31)\/(0?[1-9]|10|11|12)/
   match = britishCalDate.exec(tokens.rest())
   if (match !== null) {
     let data = {
@@ -146,7 +148,7 @@ function time(tokens) {
     }
   }
   // Month / day. American form.
-  let americanCalDate = /^(0[1-9]|10|11|12)\/([0-2][0-9]|30|31)/
+  let americanCalDate = /^(0?[1-9]|10|11|12)\/([0-2][0-9]|30|31)/
   match = americanCalDate.exec(tokens.rest())
   if (match !== null) {
     let data = {
@@ -159,12 +161,40 @@ function time(tokens) {
       data: data,
     }
   }
+
   // More flexible format.
-  let humanMonth = /^(jan|january|feb|february|mar|march|apr|april|may|jun|june|jul|july|aug|august|sep|sept|september|oct|october|nov|november|dec|december)\b/i
+  let humanMonth = /^(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|june?|july?|aug(ust)?|sep(t(ember)?)?|oct(ober)?|nov(ember)?|dec(ember)?)\b/i
+  match = humanMonth.exec(tokens.rest())
+  if (match !== null) {
+    let data = {
+      month: monthFromHumanMonth[match[0].slice(0, 3)],
+    }
+    return {
+      tag: 'time',
+      length: match[0].length,
+      data: data,
+    }
+  }
+
   // 12th august 2023, May 1 2038
   let humanWeek = /^(tue|wed|thu|sat|(?:mon|tues|wednes|thurs|fri|satur|sun)(?:day)?)\b/i
   let humanRelativeDay = /^(yesterday|today|tomorrow)\b/i
   let humanRelative = /^(second|minute|hour|day|week|month|year)s?\b/i
   // last, next, on, ago, start / end of the, in two, week 12
   // FIXME: see https://github.com/mojombo/chronic#examples
+}
+
+const monthFromHumanMonth = {
+  jan: 1,
+  feb: 2,
+  mar: 3,
+  apr: 4,
+  may: 5,
+  jun: 6,
+  jul: 7,
+  aug: 8,
+  sep: 9,
+  oct: 10,
+  nov: 11,
+  dev: 12,
 }
