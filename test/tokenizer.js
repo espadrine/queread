@@ -50,7 +50,7 @@ function run() {
   tokens = tokenize('one million three hundred and thirty-seven thousand four hundred and twenty-seventh', tokenMatchers)
   assert.equal(tokens.length, 1, 'Parse space-separated long integer')
   assert.equal(tokens[0].type, 'integer', 'long integer type')
-  assert.equal(tokens[0].text, 'fiftieth', 'long integer text')
+  assert.equal(tokens[0].text, 'one million three hundred and thirty-seven thousand four hundred and twenty-seventh', 'long integer text')
   assert.equal(tokens[0].tag, 'integer', 'long integer tag')
   assert.equal(tokens[0].data, 1337427, 'long integer data')
   assert(tokens[0].data.ordered, 'long integer data: ordered set')
