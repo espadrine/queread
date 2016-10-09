@@ -2,7 +2,7 @@ exports.integer =
 function integer(tokens) {
   let rest = tokens.rest()
   let returned
-  let int = /^([0-9][0-9 ]*)((st|nd|rd|th)\b)?/
+  let int = /^-?([0-9][0-9 ]*)((st|nd|rd|th)\b)?/
   let match = int.exec(rest)
   if (match !== null) {
     let data = +match[1].replace(/ /g, '')
@@ -204,7 +204,7 @@ let intFromHumanInt = {
 exports.number =
 function number(tokens) {
   // Get all numbers together.
-  let num = /^([0-9][0-9 ,]*)( *\.[0-9 ]*[0-9])/
+  let num = /^-?([0-9][0-9 ,]*)( *\.[0-9 ]*[0-9])/
   let match = num.exec(tokens.rest())
   if (match !== null) {
     let data = +match[0].replace(/[ ,]/g, '')

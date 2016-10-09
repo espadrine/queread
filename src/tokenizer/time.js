@@ -4,10 +4,12 @@ const number = numberTokenizers.number
 
 exports.time =
 function time(tokens) {
+  let rest = tokens.rest()
+
   // First, hour / minutes / seconds information.
 
   let time = /^([0-9]?[0-9]) *[:hH] *([0-9][0-9])/  // 20:30
-  let match = time.exec(tokens.rest())
+  let match = time.exec(rest)
   if (match !== null) {
     let data = {
       hour: +match[1],
@@ -72,7 +74,7 @@ function time(tokens) {
 
   // Now, calendar date information.
   let date = /^([0-9]+)-(0?[1-9]|10|11|12)-([0-2][0-9]|30|31)/
-  match = date.exec(tokens.rest())
+  match = date.exec(rest)
   if (match !== null) {
     let data = {
       year: +match[1],
@@ -86,8 +88,8 @@ function time(tokens) {
     }
   }
   // British form first.
-  let britishDate = /^([0-2][0-9]|30|31)\/(0?[1-9]|10|11|12)\/([0-9]+)/
-  match = britishDate.exec(tokens.rest())
+  let britishDate = /^([0-2]?[0-9]|30|31)\/(0?[1-9]|10|11|12)\/([0-9]+)/
+  match = britishDate.exec(rest)
   if (match !== null) {
     let year = +match[3]
     if (year < 100) { year += 2000 }
@@ -104,7 +106,7 @@ function time(tokens) {
   }
   // American form.
   let americanDate = /^(0?[1-9]|10|11|12)\/([0-2][0-9]|30|31)\/([0-9]+)/
-  match = americanDate.exec(tokens.rest())
+  match = americanDate.exec(rest)
   if (match !== null) {
     let year = +match[3]
     if (year < 100) { year += 2000 }
@@ -120,8 +122,8 @@ function time(tokens) {
     }
   }
   // Day - month.
-  let calDate = /^([0-2][0-9]|30|31)-(0?[1-9]|10|11|12)/
-  match = calDate.exec(tokens.rest())
+  let calDate = /^([0-2]?[0-9]|30|31)-(0?[1-9]|10|11|12)/
+  match = calDate.exec(rest)
   if (match !== null) {
     let data = {
       month: +match[2],
@@ -134,8 +136,8 @@ function time(tokens) {
     }
   }
   // Day / month. British form.
-  let britishCalDate = /^([0-2][0-9]|30|31)\/(0?[1-9]|10|11|12)/
-  match = britishCalDate.exec(tokens.rest())
+  let britishCalDate = /^([0-2]?[0-9]|30|31)\/(0?[1-9]|10|11|12)/
+  match = britishCalDate.exec(rest)
   if (match !== null) {
     let data = {
       month: +match[2],
@@ -149,7 +151,7 @@ function time(tokens) {
   }
   // Month / day. American form.
   let americanCalDate = /^(0?[1-9]|10|11|12)\/([0-2][0-9]|30|31)/
-  match = americanCalDate.exec(tokens.rest())
+  match = americanCalDate.exec(rest)
   if (match !== null) {
     let data = {
       month: +match[1],
@@ -164,19 +166,72 @@ function time(tokens) {
 
   // More flexible format.
   let humanMonth = /^(jan(uary)?|feb(ruary)?|mar(ch)?|apr(il)?|may|june?|july?|aug(ust)?|sep(t(ember)?)?|oct(ober)?|nov(ember)?|dec(ember)?)\b/i
-  match = humanMonth.exec(tokens.rest())
+  match = humanMonth.exec(rest)
   if (match !== null) {
     let data = {
-      month: monthFromHumanMonth[match[0].slice(0, 3)],
+      month: monthFromHumanMonth[match[0].slice(0, 3).toLowerCase()],
     }
-    return {
-      tag: 'time',
-      length: match[0].length,
-      data: data,
+
+    let matched = match[0].length
+    match = /^ *([0-2]?[0-9]|30|31)(?:st|nd|rd|th)?\b/.exec(rest.slice(matched))
+    if (match !== null) {
+      // May 1 2038
+      matched += match[0].length
+      data.day = +match[1]
+      match = /^ *-?[0-9]+/.exec(rest.slice(matched))
+      if (match !== null) {
+        matched += match[0].length
+        data.year = +match[0]
+        return {
+          tag: 'time',
+          length: matched,
+          data: data,
+        }
+      } else {
+        return {
+          tag: 'time',
+          length: matched,
+          data: data,
+        }
+      }
+    } else {
+      return {
+        tag: 'time',
+        length: matched,
+        data: data,
+      }
     }
   }
 
-  // 12th august 2023, May 1 2038
+  // 12th august 2023
+  if (int !== undefined && int.data < 32) {
+    let matched = int.length
+    let whitespace = /^\s*/.exec(rest.slice(matched))
+    if (whitespace !== null) { matched += whitespace[0].length }
+    match = humanMonth.exec(rest.slice(matched))
+    if (match !== null) {
+      let day = int.data
+      let month = monthFromHumanMonth[match[0].slice(0, 3).toLowerCase()]
+
+      matched += match[0].length
+      match = /^ *-?[0-9]+/.exec(rest.slice(matched))
+      if (match !== null) {
+        let year = +match[0]
+        return {
+          tag: 'time',
+          length: matched + match[0].length,
+          data: {day, month, year},
+        }
+      } else {
+        return {
+          tag: 'time',
+          length: matched + match[0].length,
+          data: {day, month},
+        }
+      }
+    }
+  }
+
   let humanWeek = /^(tue|wed|thu|sat|(?:mon|tues|wednes|thurs|fri|satur|sun)(?:day)?)\b/i
   let humanRelativeDay = /^(yesterday|today|tomorrow)\b/i
   let humanRelative = /^(second|minute|hour|day|week|month|year)s?\b/i
