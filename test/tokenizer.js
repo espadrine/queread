@@ -159,6 +159,31 @@ function run() {
   assert.equal(tokens[0].data.year, 2038, 'May 1 2038 time year data')
   assert.equal(tokens[0].data.month, 5, 'May 1 2038 time month data')
   assert.equal(tokens[0].data.day, 1, 'May 1 2038 time day data')
+
+  tokens = tokenize('Friday', tokenMatchers)
+  assert.equal(tokens.length, 1, 'Parse Friday time')
+  assert.equal(tokens[0].type, 'time', 'Friday time type')
+  assert.equal(tokens[0].text, 'Friday', 'Friday time text')
+  assert.equal(tokens[0].tag, 'time', 'Friday time tag')
+  assert.equal(tokens[0].data.weekDay, 5, 'Friday time week day data')
+
+  tokens = tokenize('last Friday of 2016', tokenMatchers)
+  assert.equal(tokens.length, 2, 'Parse last Friday of 2016 time')
+  assert.equal(tokens[1].type, 'time', 'last Friday of 2016 time type')
+  assert.equal(tokens[1].text, 'Friday of 2016', 'last Friday of 2016 time text')
+  assert.equal(tokens[1].tag, 'time', 'last Friday of 2016 time tag')
+  assert.equal(tokens[1].data.year, 2016, 'last Friday of 2016 time year data')
+  assert.equal(tokens[1].data.month, 12, 'last Friday of 2016 time month data')
+  assert.equal(tokens[1].data.day, 30, 'last Friday of 2016 time day data')
+
+  tokens = tokenize('last Friday of November of 2016', tokenMatchers)
+  assert.equal(tokens.length, 2, 'Parse last Friday of November of 2016 time')
+  assert.equal(tokens[1].type, 'time', 'last Friday of November of 2016 time type')
+  assert.equal(tokens[1].text, 'Friday of November of 2016', 'last Friday of November of 2016 time text')
+  assert.equal(tokens[1].tag, 'time', 'last Friday of November of 2016 time tag')
+  assert.equal(tokens[1].data.year, 2016, 'last Friday of November of 2016 time year data')
+  assert.equal(tokens[1].data.month, 11, 'last Friday of November of 2016 time month data')
+  assert.equal(tokens[1].data.day, 25, 'last Friday of November of 2016 time day data')
 }
 
 exports.run = run
