@@ -327,7 +327,50 @@ function time(tokens) {
   }
 
   let humanRelative = /^(second|minute|hour|day|week|month|year)s?\b/i
-  // last, next, on, ago, start / end of the, in two, week 12
+
+  let humanRelativePeriod = /^(last|next)\b/
+  match = humanRelativePeriod.exec(rest)
+  if (match !== null) {
+    let now = new Date()
+    let backward = (match[0] === 'last')
+    let matched = match[0].length
+    let whitespace = /^\s*/.exec(rest.slice(matched))
+    if (whitespace !== null) { matched += whitespace[0].length }
+
+    match = humanWeek.exec(rest.slice(matched))
+    if (match !== null) {
+      matched += match[0].length
+      let weekDay = weekFromHumanWeek[match[0].slice(0, 3).toLowerCase()]
+      let timeDir = 1
+      if (backward) { timeDir = -1 }
+      let time = nthWeekDay(timeDir, weekDay,
+        now.getFullYear(), now.getMonth() + 1, now.getDate())
+      let year = time.getFullYear()
+      let month = time.getMonth() + 1
+      let day = time.getDate()
+      return {
+        tag: 'time',
+        length: matched,
+        data: {year, month, day},
+      }
+    }
+
+    match = humanRelative.exec(rest.slice(matched))
+    if (match !== null) {
+      matched += match[0].length
+      let time = new Date(+now + relativeTime[match[1]])
+      let year = time.getFullYear()
+      let month = time.getMonth() + 1
+      let day = time.getDate()
+      return {
+        tag: 'time',
+        length: matched,
+        data: {year, month, day},
+      }
+    }
+  }
+
+  // on, ago, start / end of the, in two, week 12
   // FIXME: see https://github.com/mojombo/chronic#examples
 }
 
@@ -357,14 +400,17 @@ const weekFromHumanWeek = {
 }
 
 // eg. second friday of 2015
-function nthWeekDay(countDays, weekDay, year, month) {
+function nthWeekDay(countDays, weekDay, year, month, day) {
   let countedDays = 0
   if (countDays >= 0) {
     month = month || 1
     let monthStr = String(month)
-    if (monthStr.length === 1) { monthStr = " " + monthStr }
+    if (monthStr.length === 1) { monthStr = "0" + monthStr }
+    day = day || 1
+    let dayStr = String(day)
+    if (dayStr.length === 1) { dayStr = "0" + dayStr }
     // We stay a minute off midnight to avoid dealing with leap seconds.
-    let timestamp = +new Date(`${year}-${monthStr}-01T00:01:00Z`)  // Starting moment, ms.
+    let timestamp = +new Date(`${year}-${monthStr}-${dayStr}T00:01:00Z`)
     let time
     for (let i = 0; i < 366; i++) {
       time = new Date(timestamp)
@@ -377,9 +423,12 @@ function nthWeekDay(countDays, weekDay, year, month) {
     countDays = -countDays
     month = month || 12
     let monthStr = String(month)
-    if (monthStr.length === 1) { monthStr = " " + monthStr }
+    if (monthStr.length === 1) { monthStr = "0" + monthStr }
+    day = day || 31
+    let dayStr = String(day)
+    if (dayStr.length === 1) { dayStr = "0" + dayStr }
     // Starting moment, ms.
-    let timestamp = +new Date(`${year}-${monthStr}-31T00:01:00Z`)
+    let timestamp = +new Date(`${year}-${monthStr}-${dayStr}T00:01:00Z`)
     let time
     for (let i = 366; i >= 0; i--) {
       time = new Date(timestamp)
@@ -396,4 +445,11 @@ const relativeTime = {
   today: 0,
   tomorrow: 24 * 3600 * 1000,
   yesterday: -24 * 3600 * 1000,
+  second: 1000,
+  minute: 60 * 1000,
+  hour: 3600 * 1000,
+  day: 24 * 3600 * 1000,
+  week: 7 * 24 * 3600 * 1000,
+  month: 31 * 24 * 3600 * 1000,
+  year: 365 * 24 * 3600 * 1000,
 }

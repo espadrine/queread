@@ -63,10 +63,10 @@ function run() {
   assert.equal(tokens[0].data, -5, 'propreantepenultimate data')
   assert(tokens[0].data.ordered, 'propreantepenultimate data: ordered set')
 
-  tokens = tokenize('last', tokenMatchers)
+  tokens = tokenize('the last', tokenMatchers)
   assert.equal(tokens.length, 1, 'Parse space-separated last')
   assert.equal(tokens[0].type, 'integer', 'last type')
-  assert.equal(tokens[0].text, 'last', 'last text')
+  assert.equal(tokens[0].text, 'the last', 'last text')
   assert.equal(tokens[0].tag, 'integer', 'last tag')
   assert.equal(tokens[0].data, -1, 'last data')
   assert(tokens[0].data.ordered, 'last data: ordered set')
@@ -167,7 +167,7 @@ function run() {
   assert.equal(tokens[0].tag, 'time', 'Friday time tag')
   assert.equal(tokens[0].data.weekDay, 5, 'Friday time week day data')
 
-  tokens = tokenize('last Friday of 2016', tokenMatchers)
+  tokens = tokenize('the last Friday of 2016', tokenMatchers)
   assert.equal(tokens.length, 2, 'Parse last Friday of 2016 time')
   assert.equal(tokens[1].type, 'time', 'last Friday of 2016 time type')
   assert.equal(tokens[1].text, 'Friday of 2016', 'last Friday of 2016 time text')
@@ -176,7 +176,7 @@ function run() {
   assert.equal(tokens[1].data.month, 12, 'last Friday of 2016 time month data')
   assert.equal(tokens[1].data.day, 30, 'last Friday of 2016 time day data')
 
-  tokens = tokenize('last Friday of November of 2016', tokenMatchers)
+  tokens = tokenize('the last Friday of November of 2016', tokenMatchers)
   assert.equal(tokens.length, 2, 'Parse last Friday of November of 2016 time')
   assert.equal(tokens[1].type, 'time', 'last Friday of November of 2016 time type')
   assert.equal(tokens[1].text, 'Friday of November of 2016', 'last Friday of November of 2016 time text')
@@ -185,7 +185,8 @@ function run() {
   assert.equal(tokens[1].data.month, 11, 'last Friday of November of 2016 time month data')
   assert.equal(tokens[1].data.day, 25, 'last Friday of November of 2016 time day data')
 
-  let beforeYesterday = new Date(+new Date() - 2 * 24 * 3600 * 1000)
+  let now = new Date()
+  let beforeYesterday = new Date(+now - 2 * 24 * 3600 * 1000)
   tokens = tokenize('day before yesterday', tokenMatchers)
   assert.equal(tokens.length, 1, 'Parse the day before yesterday time')
   assert.equal(tokens[0].type, 'time', 'the day before yesterday time type')
@@ -197,6 +198,25 @@ function run() {
     'the day before yesterday time month data')
   assert.equal(tokens[0].data.day, beforeYesterday.getDate(),
     'the day before yesterday time day data')
+
+  tokens = tokenize('last Monday', tokenMatchers)
+  assert.equal(tokens.length, 1, 'Parse last Monday time')
+  assert.equal(tokens[0].type, 'time', 'last Monday time type')
+  assert.equal(tokens[0].text, 'last Monday', 'last Monday time text')
+  assert.equal(tokens[0].tag, 'time', 'last Monday time tag')
+  let lastMonday = new Date(tokens[0].data.year,
+    tokens[0].data.month - 1, tokens[0].data.day)
+  assert.equal(lastMonday.getDay(), 1, 'last Monday time year, month, day data')
+
+  tokens = tokenize('next week', tokenMatchers)
+  assert.equal(tokens.length, 1, 'Parse next week time')
+  assert.equal(tokens[0].type, 'time', 'next week time type')
+  assert.equal(tokens[0].text, 'next week', 'next week time text')
+  assert.equal(tokens[0].tag, 'time', 'next week time tag')
+  let nextWeek = new Date(tokens[0].data.year,
+    tokens[0].data.month - 1, tokens[0].data.day)
+  assert(+nextWeek - now <= 7 * 24 * 3600 * 1000, 'next week is within a week')
+  assert(+nextWeek > now, 'next week is in the future')
 }
 
 exports.run = run

@@ -106,10 +106,11 @@ function integer(tokens) {
     }
   }
 
-  match = /^(next to )?(?:the )?(?:last|end)\b/.exec(rest)
+  match = /^(next to (?:the )?|the )(?:last|end)\b/.exec(rest)
   if (match !== null) {
     let data = -1
-    if (match[1] !== undefined) { data = -2 }
+    // next to…
+    if (match[1][0] === 'n') { data = -2 }
     data = new Number(data)
     data.ordered = true
     return {
