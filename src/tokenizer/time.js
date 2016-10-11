@@ -299,11 +299,33 @@ function time(tokens) {
     return {
       tag: 'time',
       length: matched,
-      data: data,
+      data,
     }
   }
 
-  let humanRelativeDay = /^(yesterday|today|tomorrow)\b/i
+  let humanRelativeDay = /^(?:day (before|after) )?(yesterday|today|tomorrow)\b/i
+  match = humanRelativeDay.exec(rest)
+  if (match !== null) {
+    let timestamp = +new Date()
+    timestamp += relativeTime[match[2]]
+    if (match[1] !== null) {
+      if (match[1] === 'before') {
+        timestamp += relativeTime.yesterday
+      } else if (match[1] === 'after') {
+        timestamp += relativeTime.tomorrow
+      }
+    }
+    let time = new Date(timestamp)
+    let year = time.getFullYear()
+    let month = time.getMonth() + 1
+    let day = time.getDate()
+    return {
+      tag: 'time',
+      length: match[0].length,
+      data: {year, month, day},
+    }
+  }
+
   let humanRelative = /^(second|minute|hour|day|week|month|year)s?\b/i
   // last, next, on, ago, start / end of the, in two, week 12
   // FIXME: see https://github.com/mojombo/chronic#examples
@@ -367,4 +389,11 @@ function nthWeekDay(countDays, weekDay, year, month) {
     }
     return time
   }
+}
+
+// Relative time in milliseconds.
+const relativeTime = {
+  today: 0,
+  tomorrow: 24 * 3600 * 1000,
+  yesterday: -24 * 3600 * 1000,
 }

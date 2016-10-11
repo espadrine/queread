@@ -184,6 +184,19 @@ function run() {
   assert.equal(tokens[1].data.year, 2016, 'last Friday of November of 2016 time year data')
   assert.equal(tokens[1].data.month, 11, 'last Friday of November of 2016 time month data')
   assert.equal(tokens[1].data.day, 25, 'last Friday of November of 2016 time day data')
+
+  let beforeYesterday = new Date(+new Date() - 2 * 24 * 3600 * 1000)
+  tokens = tokenize('day before yesterday', tokenMatchers)
+  assert.equal(tokens.length, 1, 'Parse the day before yesterday time')
+  assert.equal(tokens[0].type, 'time', 'the day before yesterday time type')
+  assert.equal(tokens[0].text, 'day before yesterday', 'the day before yesterday time text')
+  assert.equal(tokens[0].tag, 'time', 'the day before yesterday time tag')
+  assert.equal(tokens[0].data.year, beforeYesterday.getFullYear(),
+    'the day before yesterday time year data')
+  assert.equal(tokens[0].data.month, beforeYesterday.getMonth() + 1,
+    'the day before yesterday time month data')
+  assert.equal(tokens[0].data.day, beforeYesterday.getDate(),
+    'the day before yesterday time day data')
 }
 
 exports.run = run
