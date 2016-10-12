@@ -328,17 +328,19 @@ function time(tokens) {
 
   let humanRelative = /^(second|minute|hour|day|week|month|year)s?\b/i
 
-  let humanRelativePeriod = /^(last|next)\b/
+  let humanRelativePeriod = /^(last|next|on)\b/
   match = humanRelativePeriod.exec(rest)
   if (match !== null) {
     let now = new Date()
     let backward = (match[0] === 'last')
+    let isOn = (match[0] === 'on')
     let matched = match[0].length
     let whitespace = /^\s*/.exec(rest.slice(matched))
     if (whitespace !== null) { matched += whitespace[0].length }
 
     match = humanWeek.exec(rest.slice(matched))
     if (match !== null) {
+      // next saturday
       matched += match[0].length
       let weekDay = weekFromHumanWeek[match[0].slice(0, 3).toLowerCase()]
       let timeDir = 1
@@ -356,7 +358,8 @@ function time(tokens) {
     }
 
     match = humanRelative.exec(rest.slice(matched))
-    if (match !== null) {
+    if (match !== null && !isOn) {
+      // next week
       matched += match[0].length
       let time = new Date(+now + relativeTime[match[1]])
       let year = time.getFullYear()
@@ -370,7 +373,7 @@ function time(tokens) {
     }
   }
 
-  // on, ago, start / end of the, in two, week 12
+  // ago, start / end of the, in two, week 12
   // FIXME: see https://github.com/mojombo/chronic#examples
 }
 

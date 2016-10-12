@@ -208,6 +208,15 @@ function run() {
     tokens[0].data.month - 1, tokens[0].data.day)
   assert.equal(lastMonday.getDay(), 1, 'last Monday time year, month, day data')
 
+  tokens = tokenize('on tuesday', tokenMatchers)
+  assert.equal(tokens.length, 1, 'Parse on tuesday time')
+  assert.equal(tokens[0].type, 'time', 'on tuesday time type')
+  assert.equal(tokens[0].text, 'on tuesday', 'on tuesday time text')
+  assert.equal(tokens[0].tag, 'time', 'on tuesday time tag')
+  let nextTuesday = new Date(tokens[0].data.year,
+    tokens[0].data.month - 1, tokens[0].data.day)
+  assert.equal(nextTuesday.getDay(), 2, 'on tuesday time year, month, day data')
+
   tokens = tokenize('next week', tokenMatchers)
   assert.equal(tokens.length, 1, 'Parse next week time')
   assert.equal(tokens[0].type, 'time', 'next week time type')
