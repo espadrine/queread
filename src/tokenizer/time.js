@@ -255,9 +255,9 @@ function time(tokens) {
             let year = +match[1]
             let month = data.month
             let time = nthWeekDay(previousToken.data, weekDay, year, month)
-            data.day = time.getDate()
-            data.month = time.getMonth() + 1
-            data.year = time.getFullYear()
+            data.day = time.getUTCDate()
+            data.month = time.getUTCMonth() + 1
+            data.year = time.getUTCFullYear()
             return {
               tag: 'time',
               length: matched,
@@ -267,11 +267,11 @@ function time(tokens) {
           // last monday of december
           // Assume current year.
           let now = new Date()
-          let curYear = now.getFullYear()
+          let curYear = now.getUTCFullYear()
           let time = nthWeekDay(previousToken.data, weekDay, curYear)
-          data.day = time.getDate()
-          data.month = time.getMonth() + 1
-          data.year = time.getFullYear()
+          data.day = time.getUTCDate()
+          data.month = time.getUTCMonth() + 1
+          data.year = time.getUTCFullYear()
           return {
             tag: 'time',
             length: matched,
@@ -284,9 +284,9 @@ function time(tokens) {
           // last monday of 2019
           let year = +match[0]
           let time = nthWeekDay(previousToken.data, weekDay, year)
-          data.day = time.getDate()
-          data.month = time.getMonth() + 1
-          data.year = time.getFullYear()
+          data.day = time.getUTCDate()
+          data.month = time.getUTCMonth() + 1
+          data.year = time.getUTCFullYear()
           return {
             tag: 'time',
             length: matched,
@@ -316,9 +316,9 @@ function time(tokens) {
       }
     }
     let time = new Date(timestamp)
-    let year = time.getFullYear()
-    let month = time.getMonth() + 1
-    let day = time.getDate()
+    let year = time.getUTCFullYear()
+    let month = time.getUTCMonth() + 1
+    let day = time.getUTCDate()
     return {
       tag: 'time',
       length: match[0].length,
@@ -346,10 +346,10 @@ function time(tokens) {
       let timeDir = 1
       if (backward) { timeDir = -1 }
       let time = nthWeekDay(timeDir, weekDay,
-        now.getFullYear(), now.getMonth() + 1, now.getDate())
-      let year = time.getFullYear()
-      let month = time.getMonth() + 1
-      let day = time.getDate()
+        now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate())
+      let year = time.getUTCFullYear()
+      let month = time.getUTCMonth() + 1
+      let day = time.getUTCDate()
       return {
         tag: 'time',
         length: matched,
@@ -362,9 +362,9 @@ function time(tokens) {
       // next week
       matched += match[0].length
       let time = new Date(+now + relativeTime[match[1]])
-      let year = time.getFullYear()
-      let month = time.getMonth() + 1
-      let day = time.getDate()
+      let year = time.getUTCFullYear()
+      let month = time.getUTCMonth() + 1
+      let day = time.getUTCDate()
       return {
         tag: 'time',
         length: matched,
@@ -373,7 +373,59 @@ function time(tokens) {
     }
   }
 
-  // ago, start / end of the, in two, week 12
+  // start of month
+  let startOfPeriod = /^(start|beginning|end) +of +(?:the +|this +)?(next|last|previous)?\b */
+  match = startOfPeriod.exec(rest)
+  if (match !== null) {
+    let now = new Date()
+    let end = match[1]  // start / beginning / end
+    let relation = match[2]   // next / last / previous
+    let matched = match[0].length
+    match = humanRelative.exec(rest.slice(matched))
+    if (match !== null) {
+      // next week
+      matched += match[0].length
+      let now = new Date()
+      let period = relativeTime[match[1]]
+      let factor = 0  // Current period
+      if (relation === 'next') {
+        factor = 1
+      } else if (relation === 'last' || relation === 'previous') {
+        factor = -1
+      }
+      let time = new Date(+now + period * factor)
+      let year = time.getUTCFullYear()
+      let month = time.getUTCMonth() + 1
+      let day = time.getUTCDate()
+      let hour = time.getUTCHours()
+      let minute = time.getUTCMinutes()
+      let second = time.getUTCSeconds()
+
+      if (period > relativeTime.second) { second = 0 }
+      if (period > relativeTime.minute) { minute = 0 }
+      if (period > relativeTime.hour) { hour = 0 }
+      if (period > relativeTime.day) { day = 1 }
+      if (period > relativeTime.month) { month = 1 }
+      if (end === 'end') {
+        if (period > relativeTime.month) {
+          month = 12
+          day = lastDayOfMonth(time)
+        } else if (period > relativeTime.day) { day = lastDayOfMonth(time)
+        } else if (period > relativeTime.hour) { hour = 24
+        } else if (period > relativeTime.minute) { minute = 60
+        } else if (period > relativeTime.second) { second = 60
+        }
+      }
+
+      return {
+        tag: 'time',
+        length: matched,
+        data: {year, month, day, hour, minute, second},
+      }
+    }
+  }
+
+  // ago, in two, week 12
   // FIXME: see https://github.com/mojombo/chronic#examples
 }
 
@@ -455,4 +507,19 @@ const relativeTime = {
   week: 7 * 24 * 3600 * 1000,
   month: 31 * 24 * 3600 * 1000,
   year: 365 * 24 * 3600 * 1000,
+}
+
+// Takes a Date, returns the date of the last day of the corresponding month.
+// eg, 31.
+function lastDayOfMonth(time) {
+  let year = time.getUTCFullYear()
+  let nextMonth = time.getUTCMonth() + 2
+  if (nextMonth > 12) {
+    year++
+    nextMonth = 1
+  }
+  let nextMonthStr = String(nextMonth)
+  if (nextMonthStr.length === 1) { nextMonthStr = '0' + nextMonthStr }
+  let date = new Date(`${year}-${nextMonthStr}-01T00:00:00Z`)
+  return (new Date(+date - 1000)).getUTCDate()
 }

@@ -192,11 +192,11 @@ function run() {
   assert.equal(tokens[0].type, 'time', 'the day before yesterday time type')
   assert.equal(tokens[0].text, 'day before yesterday', 'the day before yesterday time text')
   assert.equal(tokens[0].tag, 'time', 'the day before yesterday time tag')
-  assert.equal(tokens[0].data.year, beforeYesterday.getFullYear(),
+  assert.equal(tokens[0].data.year, beforeYesterday.getUTCFullYear(),
     'the day before yesterday time year data')
-  assert.equal(tokens[0].data.month, beforeYesterday.getMonth() + 1,
+  assert.equal(tokens[0].data.month, beforeYesterday.getUTCMonth() + 1,
     'the day before yesterday time month data')
-  assert.equal(tokens[0].data.day, beforeYesterday.getDate(),
+  assert.equal(tokens[0].data.day, beforeYesterday.getUTCDate(),
     'the day before yesterday time day data')
 
   tokens = tokenize('last Monday', tokenMatchers)
@@ -204,28 +204,61 @@ function run() {
   assert.equal(tokens[0].type, 'time', 'last Monday time type')
   assert.equal(tokens[0].text, 'last Monday', 'last Monday time text')
   assert.equal(tokens[0].tag, 'time', 'last Monday time tag')
-  let lastMonday = new Date(tokens[0].data.year,
-    tokens[0].data.month - 1, tokens[0].data.day)
-  assert.equal(lastMonday.getDay(), 1, 'last Monday time year, month, day data')
+  let lastMonday = dateFromData(tokens[0].data)
+  assert.equal(lastMonday.getUTCDay(), 1, 'last Monday time year, month, day data')
 
   tokens = tokenize('on tuesday', tokenMatchers)
   assert.equal(tokens.length, 1, 'Parse on tuesday time')
   assert.equal(tokens[0].type, 'time', 'on tuesday time type')
   assert.equal(tokens[0].text, 'on tuesday', 'on tuesday time text')
   assert.equal(tokens[0].tag, 'time', 'on tuesday time tag')
-  let nextTuesday = new Date(tokens[0].data.year,
-    tokens[0].data.month - 1, tokens[0].data.day)
-  assert.equal(nextTuesday.getDay(), 2, 'on tuesday time year, month, day data')
+  let nextTuesday = dateFromData(tokens[0].data)
+  assert.equal(nextTuesday.getUTCDay(), 2, 'on tuesday time year, month, day data')
 
   tokens = tokenize('next week', tokenMatchers)
   assert.equal(tokens.length, 1, 'Parse next week time')
   assert.equal(tokens[0].type, 'time', 'next week time type')
   assert.equal(tokens[0].text, 'next week', 'next week time text')
   assert.equal(tokens[0].tag, 'time', 'next week time tag')
-  let nextWeek = new Date(tokens[0].data.year,
-    tokens[0].data.month - 1, tokens[0].data.day)
+  let nextWeek = dateFromData(tokens[0].data)
   assert(+nextWeek - now <= 7 * 24 * 3600 * 1000, 'next week is within a week')
   assert(+nextWeek > now, 'next week is in the future')
+
+  tokens = tokenize('end of year', tokenMatchers)
+  assert.equal(tokens.length, 1, 'Parse end of year time')
+  assert.equal(tokens[0].type, 'time', 'end of year time type')
+  assert.equal(tokens[0].text, 'end of year', 'end of year time text')
+  assert.equal(tokens[0].tag, 'time', 'end of year time tag')
+  let endOfYear = new Date(`${now.getUTCFullYear()}-12-31Z`)
+  assert.equal(tokens[0].data.year, endOfYear.getUTCFullYear(),
+    'end of year time year')
+  assert.equal(tokens[0].data.month, endOfYear.getUTCMonth() + 1,
+    'end of year time month')
+  assert.equal(tokens[0].data.day, endOfYear.getUTCDate(),
+    'end of year time day')
+  assert.equal(tokens[0].data.hour, endOfYear.getUTCHours(),
+    'end of year time hour')
+  assert.equal(tokens[0].data.minute, endOfYear.getUTCMinutes(),
+    'end of year time hour')
+  assert.equal(tokens[0].data.second, endOfYear.getUTCSeconds(),
+    'end of year time hour')
+}
+
+// Converts {year, month, …} to a Date.
+function dateFromData(data) {
+  let {year, month, day, hour, minute, second} = data
+  year = year || 0
+  let monthStr = String(month || 1)
+  if (monthStr.length === 1) { monthStr = '0' + monthStr }
+  let dayStr = String(day || 1)
+  if (dayStr.length === 1) { dayStr = '0' + dayStr }
+  let hourStr = String(hour || 0)
+  if (hourStr.length === 1) { hourStr = '0' + hourStr }
+  let minuteStr = String(minute || 0)
+  if (minuteStr.length === 1) { minuteStr = '0' + minuteStr }
+  let secondStr = String(second || 0)
+  if (secondStr.length === 1) { secondStr = '0' + secondStr }
+  return new Date(`${year}-${monthStr}-${dayStr}T${hourStr}:${minuteStr}:${secondStr}`)
 }
 
 exports.run = run
