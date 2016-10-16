@@ -242,6 +242,17 @@ function run() {
     'end of year time hour')
   assert.equal(tokens[0].data.second, endOfYear.getUTCSeconds(),
     'end of year time hour')
+
+  tokens = tokenize('in two months', tokenMatchers)
+  assert.equal(tokens.length, 2, 'Parse in two months time')
+  assert.equal(tokens[1].type, 'time', 'in two months time type')
+  assert.equal(tokens[1].text, 'two months', 'in two months time text')
+  assert.equal(tokens[1].tag, 'time', 'in two months time tag')
+  let inTwoMonths = dateFromData(tokens[1].data)
+  assert(+inTwoMonths - now <= 2 * 31 * 24 * 3600 * 1000,
+    'in two months is within two months')
+  assert(+inTwoMonths - now > 32 * 24 * 3600 * 1000,
+    'in two months is after a month')
 }
 
 // Converts {year, month, …} to a Date.

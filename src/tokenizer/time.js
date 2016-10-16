@@ -268,7 +268,8 @@ function time(tokens) {
           // Assume current year.
           let now = new Date()
           let curYear = now.getUTCFullYear()
-          let time = nthWeekDay(previousToken.data, weekDay, curYear)
+          let month = data.month
+          let time = nthWeekDay(previousToken.data, weekDay, curYear, month)
           data.day = time.getUTCDate()
           data.month = time.getUTCMonth() + 1
           data.year = time.getUTCFullYear()
@@ -425,7 +426,33 @@ function time(tokens) {
     }
   }
 
-  // ago, in two, week 12
+  // in two months
+  if (previousToken && previousToken.type === 'word'
+      && previousToken.tag === 'in') {
+    if (int !== undefined || num !== undefined) {
+      if (num === undefined) { num = int }
+      let matched = num.length
+      let whitespace = /^\s*/.exec(rest.slice(matched))
+      if (whitespace !== null) { matched += whitespace[0].length }
+      match = humanRelative.exec(rest.slice(matched))
+      if (match !== null) {
+        // next week
+        matched += match[0].length
+        let now = new Date()
+        let time = new Date(+now + num.data * relativeTime[match[1]])
+        let year = time.getUTCFullYear()
+        let month = time.getUTCMonth() + 1
+        let day = time.getUTCDate()
+        return {
+          tag: 'time',
+          length: matched,
+          data: {year, month, day},
+        }
+      }
+    }
+  }
+
+  // ago, week 12
   // FIXME: see https://github.com/mojombo/chronic#examples
 }
 
