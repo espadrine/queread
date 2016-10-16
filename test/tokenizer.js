@@ -243,6 +243,14 @@ function run() {
   assert.equal(tokens[0].data.second, endOfYear.getUTCSeconds(),
     'end of year time hour')
 
+  tokens = tokenize('start of october', tokenMatchers)
+  assert.equal(tokens.length, 1, 'Parse start of october time')
+  assert.equal(tokens[0].type, 'time', 'start of october time type')
+  assert.equal(tokens[0].text, 'start of october', 'start of october time text')
+  assert.equal(tokens[0].tag, 'time', 'start of october time tag')
+  assert.equal(tokens[0].data.month, 10, 'start of october time month')
+  assert.equal(tokens[0].data.day, 1, 'start of october time day')
+
   tokens = tokenize('in two months', tokenMatchers)
   assert.equal(tokens.length, 2, 'Parse in two months time')
   assert.equal(tokens[1].type, 'time', 'in two months time type')

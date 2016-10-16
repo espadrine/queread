@@ -46,7 +46,7 @@ function time(tokens) {
   let previousToken = tokens.last()
   if (previousToken && previousToken.type === 'word'
       && previousToken.tag === 'at') {
-    if (int !== undefined) {
+    if (int !== undefined && int.data >= 0) {
       let data = {}
       if (int.data >= 24 && int.data <= 2460) {
         // Compact time: 1230 for 12:30.
@@ -204,7 +204,7 @@ function time(tokens) {
   }
 
   // 12th august 2023
-  if (int !== undefined && int.data < 32) {
+  if (int !== undefined && int.data > 0 && int.data < 32) {
     let matched = int.length
     let whitespace = /^\s*/.exec(rest.slice(matched))
     if (whitespace !== null) { matched += whitespace[0].length }
@@ -375,13 +375,14 @@ function time(tokens) {
   }
 
   // start of month
-  let startOfPeriod = /^(start|beginning|end) +of +(?:the +|this +)?(next|last|previous)?\b */
+  let startOfPeriod = /^(?:the +)?(start|beginning|end) +of +(?:the +|this +)?(next|last|previous)? */
   match = startOfPeriod.exec(rest)
   if (match !== null) {
     let now = new Date()
     let end = match[1]  // start / beginning / end
     let relation = match[2]   // next / last / previous
     let matched = match[0].length
+
     match = humanRelative.exec(rest.slice(matched))
     if (match !== null) {
       // next week
@@ -424,6 +425,27 @@ function time(tokens) {
         data: {year, month, day, hour, minute, second},
       }
     }
+
+    match = humanMonth.exec(rest.slice(matched))
+    if (match !== null) {
+      // end of october
+      matched += match[0].length
+      let month = monthFromHumanMonth[match[0].slice(0, 3).toLowerCase()]
+      let now = new Date()
+      let year = now.getUTCFullYear()
+      let day = 1
+      if (end === 'end') {
+        day = lastDayOfMonth(new Date(`${year}:${month}:${15}Z`))
+      }
+
+      return {
+        tag: 'time',
+        length: matched,
+        data: {year, month, day},
+      }
+    }
+
+    // FIXME: detect years (eg. "end of 2019").
   }
 
   // in two months
